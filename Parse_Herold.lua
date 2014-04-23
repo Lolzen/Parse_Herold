@@ -466,7 +466,9 @@ if input == "fetch" then
 			local rawbranch2 = string.gsub(rawbranch, "Ä", "ä")
 			local rawbranch3 = string.gsub(rawbranch2, "Ö", "ö")
 			local rawbranch4 = string.gsub(rawbranch3, "Ü", "ü")
-			local formattedbranch = string.gsub(rawbranch4, "-/", "") --remove slashes 
+			--remove slashes 
+			local rawbranch5 = string.gsub(rawbranch4, "-/", "")
+			local formattedbranch = string.gsub(rawbranch5, "/", "-")
 			
 			local tempurl = url..place_name.."/"..string.lower(formattedbranch)
 			print(place_name..": "..k.." "..tempurl)
