@@ -530,7 +530,7 @@ if input == "fetch" then
 --		print("error")
 --	end
 --	print(body)
-	for placeNum, place_name in pairs(places) do
+	for placeNum, placeName in pairs(places) do
 		for k, v in ipairs(branch) do
 			--print(k.." "..v)
 			local rawbranch = string.gsub(v, " ", "-") --replace empty space with minus
@@ -542,8 +542,8 @@ if input == "fetch" then
 			local rawbranch5 = string.gsub(rawbranch4, "-/", "")
 			local formattedbranch = string.gsub(rawbranch5, "/", "-")
 			
-			local tempurl = url..place_name.."/"..string.lower(formattedbranch)
-			print(place_name..": "..k.." "..tempurl)
+			local tempurl = url..placeName.."/"..string.lower(formattedbranch)
+			print(placeName..": "..k.." "..tempurl)
 
 			--print(place_name..": "..k.." "..formattedbranch)
 		end
