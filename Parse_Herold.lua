@@ -2243,35 +2243,38 @@ io.write("\n>")
 
 input = io.read()
 if input == "fetch" then
-	local body,c,l,h = http.request(url)
---	if string.find(body, "branche") then
---		print("branche found")
---	else
---		print("error")
---	end
---	print(body)
 	for placeNum, placeName in pairs(places) do
-		for k, v in ipairs(branch) do
-			--print(k.." "..v)
-			local rawbranch = string.gsub(v, " ", "-") --replace empty space with minus
+		for branchNum, branchName in ipairs(branch) do
+			local rawbranch = string.gsub(branchName, " ", "-") --replace empty space with minus
 			--fix for string.lower not working on Umlauts
 			local rawbranch2 = string.gsub(rawbranch, "Ä", "ä")
 			local rawbranch3 = string.gsub(rawbranch2, "Ö", "ö")
 			local rawbranch4 = string.gsub(rawbranch3, "Ü", "ü")
-			--remove slashes 
+			--remove slashes
 			local rawbranch5 = string.gsub(rawbranch4, "-/", "")
 			local formattedbranch = string.gsub(rawbranch5, "/", "-")
-			
+			-- check the url (branche/ort)
 			local tempurl = url..placeName.."/"..string.lower(formattedbranch)
-			print(placeName..": "..k.." "..tempurl)
-
-			--print(place_name..": "..k.." "..formattedbranch)
+			local body,c,l,h = http.request(tempurl)
+			if string.find(body, "prop13 = \""..placeName.."\"") then --check if branch got any hits in placeName or not
+--				print(branchName.." is in "..placeName)
+				-- get the resultnames
+				local pattern = "class=\"bold\">[%a%p%s]+"
+				if string.match(body, pattern) then
+					local rawhit = string.match(body, "class=\"bold\">[%a%p%s]+")
+					local rawhit2 = string.gsub(rawhit, "</a></h", "")
+					local formattedhit = string.gsub(rawhit2, "class=\"bold\">", "")
+					print(formattedhit)
+				end
+			else
+				print(branchName.." NOT RELEVANT")
+			end
 		end
 	end
 elseif input == "abort" then
-	print("bye bye")
+	io.write("bye bye :(\n")
 else
-	print("Wrong keyword: ["..input.."], exiting now")
+	io.write("Wrong keyword: ["..input.."], exiting now\n")
 end
 
 
