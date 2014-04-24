@@ -2192,8 +2192,42 @@ local branch = {
 	"Wurstschneidemaschinen",
 	"Wurzelstockfräsen",
 	-- X
+	--nothing there
 	-- Y
+	"Yachtcharter",
+	"Yoga",
 	-- Z
+	"Zähler u Zählwerke",
+	"Zahngesundheitsvorsorge",
+	"Zahnräder",
+	"Zahntechnische Laboratorien",
+	"Zauber- u Jonglierartikel",
+	"Zauberkünstler",
+	"Zäune",
+	"Zeichenbüro",
+	"Zeichenmaschinen u -tische",
+	"Zeiterfassungsgeräte u -systeme",
+	"Zeitungen u Zeitschriften",
+	"Zeitungen u Zeitschriften / Vertrieb",
+	"Zelte / Erzeugung",
+	"Zelte / Handel",
+	"Zelte / Vermietung",
+	"Zementwerke",
+	"Zentralstaubsauganlagen",
+	"Zertifizierungsstellen",
+	"Ziegeleien",
+	"Zimmerbrunnen",
+	"Zimmereien",
+	"Zinnwaren",
+	"Zirkus",
+	"Zollämter / Hauptzollämter",
+	"Zoofachgeschäfte",
+	"Zoologiebedarf",
+	"Zucker",
+	"Zündhölzer",
+	"Zutrittskontrollsysteme",
+	"Zwischenwände u -decken",
+	"Zylinderschleifereien",
 }
 
 -- Script magic
