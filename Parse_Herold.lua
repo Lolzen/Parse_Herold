@@ -6,8 +6,8 @@ local db = {}
 local url = "http://www.herold.at/gelbe-seiten/"
 local places = {
 	"baden",
---	"wr-neustadt-neunkirchen",
---	"schwechat",
+	"wr-neustadt-neunkirchen",
+	"schwechat",
 }
 local branch = {
 	-- A
@@ -2257,15 +2257,12 @@ if input == "fetch" then
 			local tempurl = url..placeName.."/"..string.lower(formattedbranch)
 			local body,c,l,h = http.request(tempurl)
 			if string.find(body, "prop13 = \""..placeName.."\"") then --check if branch got any hits in placeName or not
---				print(branchName.." is in "..placeName)
 				-- get the resultnames
 				local pattern = "class=\"bold\">[%a%p%s]+"
-				if string.match(body, pattern) then
-					local rawhit = string.match(body, "class=\"bold\">[%a%p%s]+")
-					local rawhit2 = string.gsub(rawhit, "</a></h", "")
-					local formattedhit = string.gsub(rawhit2, "class=\"bold\">", "")
-					print(formattedhit)
-				end
+				for hit in string.gfind(body, "class=\"bold\">[%a%p%s]+") do
+					local formattedhit = string.gsub(hit, "(class=\"bold\">)([%a%p%s]+)(</a></h)", "%2")
+					print(formattedbranch..": "..formattedhit.." ("..placeName..")")
+				end 
 			else
 				print(branchName.." NOT RELEVANT")
 			end
