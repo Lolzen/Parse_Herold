@@ -2245,14 +2245,11 @@ input = io.read()
 if input == "fetch" then
 	for placeNum, placeName in pairs(places) do
 		for branchNum, branchName in ipairs(branch) do
-			local rawbranch = string.gsub(branchName, " ", "-") --replace empty space with minus
-			--fix for string.lower not working on Umlauts
-			local rawbranch2 = string.gsub(rawbranch, "Ä", "ä")
-			local rawbranch3 = string.gsub(rawbranch2, "Ö", "ö")
-			local rawbranch4 = string.gsub(rawbranch3, "Ü", "ü")
-			--remove slashes
-			local rawbranch5 = string.gsub(rawbranch4, "-/", "")
-			local formattedbranch = string.gsub(rawbranch5, "/", "-")
+			-- format branchName, so we can use it for url crawling
+			-- replace empty space with "-"
+			-- string.lower doesn't work on Umlauts, do it manually
+			-- remove/replace slashes ( "-/" -> "" / "/" -> "-")
+			local formattedbranch = string.gsub(branchName, "( )(Ä)(Ö)(Ü)(-/)(/)", "(-)(ä)(ö)(ü)()(-)")
 			-- check the url (branche/ort)
 			local tempurl = url..placeName.."/"..string.lower(formattedbranch)
 			local body,c,l,h = http.request(tempurl)
