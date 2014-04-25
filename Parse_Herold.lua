@@ -2255,11 +2255,10 @@ if input == "fetch" then
 			local body,c,l,h = http.request(tempurl)
 			if string.find(body, "prop13 = \""..placeName.."\"") then --check if branch got any hits in placeName or not
 				-- get the resultnames
-				local pattern = "class=\"bold\">[%a%p%s]+"
 				for hit in string.gfind(body, "class=\"bold\">[%a%p%s]+") do
 					local formattedhit = string.gsub(hit, "(class=\"bold\">)([%a%p%s]+)(</a></h)", "%2")
 					print(formattedbranch..": "..formattedhit.." ("..placeName..")")
-				end 
+				end
 			else
 				print(branchName.." NOT RELEVANT")
 			end
