@@ -1,14 +1,17 @@
---// A script to parse certain fields of www.herold.at to an excell file
+--// A script to parse certain fields from www.herold.at to an excell file
 --// Uses Lua and luasocket libraries
 
 -- Settings
 local db = {}
-local url = "http://www.herold.at/gelbe-seiten/"
+local baseurl = "http://www.herold.at/gelbe-seiten/"
 local places = {
 	"baden",
 	"wr-neustadt-neunkirchen",
 	"schwechat",
 }
+--local fiels = {
+--	"
+--}
 local branch = {
 	-- A
 	"Abbeizereien u Ablaugeunternehmen",
@@ -2250,14 +2253,14 @@ if input == "fetch" then
 			-- string.lower doesn't work on Umlauts, do it manually
 			-- remove/replace slashes ( "-/" -> "" / "/" -> "-")
 			local formattedbranch = string.gsub(branchName, "( )(Ä)(Ö)(Ü)(-/)(/)", "(-)(ä)(ö)(ü)()(-)")
-			-- check the url (branche/ort)
-			local tempurl = url..placeName.."/"..string.lower(formattedbranch)
-			local body,c,l,h = http.request(tempurl)
+			-- check the url (branch/place)
+			local branchplaceurl = baseurl..placeName.."/"..string.lower(formattedbranch)
+			local body = http.request(branchplaceurl)
 			if string.find(body, "prop13 = \""..placeName.."\"") then --check if branch got any hits in placeName or not
-				-- get the resultnames
-				for hit in string.gfind(body, "class=\"bold\">[%a%p%s]+") do
-					local formattedhit = string.gsub(hit, "(class=\"bold\">)([%a%p%s]+)(</a></h)", "%2")
-					print(formattedbranch..": "..formattedhit.." ("..placeName..")")
+				-- get result's names and urls
+				for result in string.gfind(body, "<a href=\"http://www.herold.at/gelbe[%-]seiten/[%w%-%%]+/[%w%%]+/[%w%p]+ class=\"bold\">[%w%s%-%;%&]+</a></h2><div") do
+					local formattedresulturl = string.gsub(result, "(<a href=\")(http://www.herold.at/gelbe[%-]seiten/[%w%-%%]+/[%w%%]+/[%w%p]+)(%s.*)", "%2")
+					local formattedresultname = string.gsub(result, "(<a href=\"http://www.herold.at/gelbe[%-]seiten/[%w%-%%]+/[%w%%]+/[%w%p]+) (class=\"bold\">)([%a%p%s]+)(</a></h2><div)", "%3")
 				end
 			else
 				print(branchName.." NOT RELEVANT")
