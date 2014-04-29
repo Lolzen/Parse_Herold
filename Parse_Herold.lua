@@ -1,4 +1,4 @@
---// A script to parse certain fields from www.herold.at to an excell file
+--// A script to parse certain fields from www.herold.at to an excel file
 --// Uses Lua and luasocket libraries
 
 -- Settings
@@ -9,9 +9,6 @@ local places = {
 	"wr-neustadt-neunkirchen",
 	"schwechat",
 }
---local fiels = {
---	"
---}
 local branch = {
 	-- A
 	"Abbeizereien u Ablaugeunternehmen",
