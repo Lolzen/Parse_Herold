@@ -2268,7 +2268,6 @@ if input == "fetch" then
 				for result in string.gfind(branchplacebody, "<a href=\"http://www.herold.at/gelbe[%-]seiten/[%w%-%%]+/[%w%%]+/[%w%-]+/\" class=\"bold\">[%w%s%-%;%&]+</a></h2><div") do
 					local formattedresulturl = string.gsub(result, "(<a href=\")(http://www.herold.at/gelbe[%-]seiten/[%w%-%%]+/[%w%%]+/[%w%p]+)(\")(%s.*)", "%2")
 					local resultbody = http.request(formattedresulturl)
-					--print(formattedresulturl)
 					-- gather fields [name], [address], [plz] and [region] from the result
 					for itemprop in string.gfind(resultbody, "itemprop=\"[%w]+\">[%w%s%-%&amp;%.]+</span>") do
 						-- name
@@ -2296,6 +2295,16 @@ if input == "fetch" then
 							print("iemprop (addressRegion): "..region)
 						end
 						-- print(itemprop)
+					end
+					-- gather [phonenumber] from the result
+					for phonenumber in string.gfind(resultbody, "class=\"telefon\">Telefon</th><td class=\"lnumber\">[%+%d%s%-]+") do
+						local phonenum = string.gsub(phonenumber, "(class=\"telefon\">Telefon</th><td class=\"lnumber\">)([%+%d%s%-]+)", "%2")
+						print("phone: "..phonenum)
+					end
+					-- gather [mobilenumber] from the result
+					for mobilenumber in string.gfind(resultbody, "class=\"mobil\">Mobil</th><td class=\"lnumber\">[%+%d%s%-]+") do
+						local mobilenum = string.gsub(mobilenumber, "(class=\"mobil\">Mobil</th><td class=\"lnumber\">)([%+%d%s%-]+)", "%2")
+						print("mobile: "..mobilenum)
 					end
 				end
 			else
