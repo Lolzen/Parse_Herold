@@ -2250,17 +2250,53 @@ if input == "fetch" then
 		for branchNum, branchName in ipairs(branch) do
 			-- format branchName, so we can use it for url crawling
 			-- replace empty space with "-"
+			local branchraw1 = string.gsub(branchName, "%s", "-")
 			-- string.lower doesn't work on Umlauts, do it manually
-			-- remove/replace slashes ( "-/" -> "" / "/" -> "-")
-			local formattedbranch = string.gsub(branchName, "( )(Ä)(Ö)(Ü)(-/)(/)", "(-)(ä)(ö)(ü)()(-)")
+			local branchraw2 = string.gsub(branchraw1, "(Ä)", "ä")
+			local branchraw3 = string.gsub(branchraw2, "(Ö)", "ö")
+			local branchraw4 = string.gsub(branchraw3, "(Ü", "ü")
+			-- remove slashes ( "-/" -> "")
+			local branchraw5 = string.gsub(branchraw4, "((-/)", "")
+			-- remove commas ("," -> "")
+			local formattedbranch = string.gsub(branchraw5, "(,)", "")
 			-- check the url (branch/place)
 			local branchplaceurl = baseurl..placeName.."/"..string.lower(formattedbranch)
-			local body = http.request(branchplaceurl)
-			if string.find(body, "prop13 = \""..placeName.."\"") then --check if branch got any hits in placeName or not
+			print(branchplaceurl)
+			local branchplacebody = http.request(branchplaceurl)
+			if string.find(branchplacebody, "prop13 = \""..placeName.."\"") then --check if branch got any hits in placeName or not
 				-- get result's names and urls
-				for result in string.gfind(body, "<a href=\"http://www.herold.at/gelbe[%-]seiten/[%w%-%%]+/[%w%%]+/[%w%p]+ class=\"bold\">[%w%s%-%;%&]+</a></h2><div") do
-					local formattedresulturl = string.gsub(result, "(<a href=\")(http://www.herold.at/gelbe[%-]seiten/[%w%-%%]+/[%w%%]+/[%w%p]+)(%s.*)", "%2")
-					local formattedresultname = string.gsub(result, "(<a href=\"http://www.herold.at/gelbe[%-]seiten/[%w%-%%]+/[%w%%]+/[%w%p]+) (class=\"bold\">)([%a%p%s]+)(</a></h2><div)", "%3")
+				for result in string.gfind(branchplacebody, "<a href=\"http://www.herold.at/gelbe[%-]seiten/[%w%-%%]+/[%w%%]+/[%w%-]+/\" class=\"bold\">[%w%s%-%;%&]+</a></h2><div") do
+					local formattedresulturl = string.gsub(result, "(<a href=\")(http://www.herold.at/gelbe[%-]seiten/[%w%-%%]+/[%w%%]+/[%w%p]+)(\")(%s.*)", "%2")
+					local resultbody = http.request(formattedresulturl)
+					--print(formattedresulturl)
+					-- gather fields [name], [address], [plz] and [region] from the result
+					for itemprop in string.gfind(resultbody, "itemprop=\"[%w]+\">[%w%s%-%&amp;%.]+</span>") do
+						-- name
+						if string.find(itemprop, "name") then
+							local name = string.gsub(itemprop, "(itemprop=\"[%w]+\">)([%w%s%p]+)(</span>)", "%2")
+							-- replace "&amp;" in the itemprop for "name" with a simple "&"
+							if string.find(name, "&amp;") then
+								name = string.gsub(name, "&amp;", "&")
+							end
+							print("itemprop (name): "..name)
+						end
+						-- streetAddress
+						if string.find(itemprop, "streetAddress") then
+							local address = string.gsub(itemprop, "(itemprop=\"[%w]+\">)([%w%s%p]+)(</span>)", "%2")
+							print("iemprop (adress): "..address)
+						end
+						-- postalCode
+						if string.find(itemprop, "postalCode") then
+							local plz = string.gsub(itemprop, "(itemprop=\"[%w]+\">)([%w%s%p]+)(</span>)", "%2")
+							print("iemprop (postalCode): "..plz)
+						end
+						-- adressRegion
+						if string.find(itemprop, "addressRegion") then
+							local region = string.gsub(itemprop, "(itemprop=\"[%w]+\">)([%w%s%p]+)(</span>)", "%2")
+							print("iemprop (addressRegion): "..region)
+						end
+						-- print(itemprop)
+					end
 				end
 			else
 				print(branchName.." NOT RELEVANT")
