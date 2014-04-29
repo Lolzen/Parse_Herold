@@ -2317,6 +2317,11 @@ if input == "fetch" then
 						local mail = string.gsub(rawmail1, "[%p]dot[%p]", ".")
 						print("mail_two: "..mail)
 					end
+					-- get [url] from the result
+					for www in string.gfind(resultbody, "Fenster\">www[%w%p]+</a>") do
+						local url = string.gsub(www, "(Fenster\">)([%w%p]+)(</a>)", "%2")
+						print("url: "..url)
+					end
 				end
 			else
 				print(branchName.." NOT RELEVANT")
