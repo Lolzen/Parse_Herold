@@ -2231,6 +2231,11 @@ local branch = {
 }
 
 -- Script magic
+
+-- get the OS the script is running from
+local platform  =  io.popen("uname -s"):read("*l")
+--print(platform)
+
 local http = require("socket.http") --load luasocket library
 
 -- Greet the user with the available options
@@ -2260,65 +2265,79 @@ if input == "fetch" then
 			local branchplaceurl = baseurl..placeName.."/"..string.lower(formattedbranch)
 			print(branchplaceurl)
 			local branchplacebody = http.request(branchplaceurl)
+			local name, address, plz, region, phonenum, mobilenum, mail, altmail, url
+			local  tablestring
 			if string.find(branchplacebody, "prop13 = \""..placeName.."\"") then --check if branch got any hits in placeName or not
 				-- get result's names and urls
-				for result in string.gfind(branchplacebody, "<a href=\"http://www.herold.at/gelbe[%-]seiten/[%w%-%%]+/[%w%%]+/[%w%-]+/\" class=\"bold\">[%w%s%-%;%&]+</a></h2><div") do
-					local formattedresulturl = string.gsub(result, "(<a href=\")(http://www.herold.at/gelbe[%-]seiten/[%w%-%%]+/[%w%%]+/[%w%p]+)(\")(%s.*)", "%2")
+				for result in string.gfind(branchplacebody, "<a href=\"[%w%p]+/\" class=\"bold\">[%w%s%p]+</a></h2><div") do
+					local formattedresulturl = string.gsub(result, "(<a href=\")([%w%s%p]+)(\")(%s.*)", "%2")
 					local resultbody = http.request(formattedresulturl)
 					-- gather fields [name], [address], [plz] and [region] from the result
-					for itemprop in string.gfind(resultbody, "itemprop=\"[%w]+\">[%w%s%-%&amp;%.]+</span>") do
+					for itemprop in string.gfind(resultbody, "itemprop=\"[%w]+\">[%w%s%-%&amp;%.%ö%ä%ü]+</span>") do
 						-- name
 						if string.find(itemprop, "name") then
-							local name = string.gsub(itemprop, "(itemprop=\"[%w]+\">)([%w%s%p]+)(</span>)", "%2")
+							name = string.gsub(itemprop, "(itemprop=\"[%w]+\">)([%w%s%p]+)(</span>)", "%2")
 							-- replace "&amp;" in the itemprop for "name" with a simple "&"
 							if string.find(name, "&amp;") then
 								name = string.gsub(name, "&amp;", "&")
 							end
-							print("itemprop (name): "..name)
+						--	print("itemprop (name): "..name)
+							tablestring = name..", "
 						end
 						-- streetAddress
 						if string.find(itemprop, "streetAddress") then
-							local address = string.gsub(itemprop, "(itemprop=\"[%w]+\">)([%w%s%p]+)(</span>)", "%2")
-							print("iemprop (adress): "..address)
+							address = string.gsub(itemprop, "(itemprop=\"[%w]+\">)([%w%s%p%ö%ä%ü]+)(</span>)", "%2")
+						--	print("iemprop (adress): "..address)
+							tablestring = tablestring..address..", "
 						end
 						-- postalCode
 						if string.find(itemprop, "postalCode") then
-							local plz = string.gsub(itemprop, "(itemprop=\"[%w]+\">)([%w%s%p]+)(</span>)", "%2")
-							print("iemprop (postalCode): "..plz)
+							plz = string.gsub(itemprop, "(itemprop=\"[%w]+\">)([%d]+)(</span>)", "%2")
+						--	print("iemprop (postalCode): "..plz)
+							tablestring = tablestring..plz..", "
 						end
 						-- adressRegion
 						if string.find(itemprop, "addressRegion") then
-							local region = string.gsub(itemprop, "(itemprop=\"[%w]+\">)([%w%s%p]+)(</span>)", "%2")
-							print("iemprop (addressRegion): "..region)
+							region = string.gsub(itemprop, "(itemprop=\"[%w]+\">)([%w%s%p%ö%ä%ü]+)(</span>)", "%2")
+						--	print("iemprop (addressRegion): "..region)
+							tablestring = tablestring..region..", "
 						end
 					end
 					-- gather [phonenumber] from the result
 					for phonenumber in string.gfind(resultbody, "class=\"telefon\">Telefon</th><td class=\"lnumber\">[%+%d%s%-]+") do
-						local phonenum = string.gsub(phonenumber, "(class=\"telefon\">Telefon</th><td class=\"lnumber\">)([%+%d%s%-]+)", "%2")
-						print("phone: "..phonenum)
+						phonenum = string.gsub(phonenumber, "(class=\"telefon\">Telefon</th><td class=\"lnumber\">)([%+%d%s%-]+)", "%2")
+					--	print("phone: "..phonenum)
+						tablestring = tablestring..phonenum..", " or ""
 					end
 					-- gather [mobilenumber] from the result
 					for mobilenumber in string.gfind(resultbody, "class=\"mobil\">Mobil</th><td class=\"lnumber\">[%+%d%s%-]+") do
-						local mobilenum = string.gsub(mobilenumber, "(class=\"mobil\">Mobil</th><td class=\"lnumber\">)([%+%d%s%-]+)", "%2")
-						print("mobile: "..mobilenum)
+						mobilenum = string.gsub(mobilenumber, "(class=\"mobil\">Mobil</th><td class=\"lnumber\">)([%+%d%s%-]+)", "%2")
+					--	print("mobile: "..mobilenum)
+						tablestring = tablestring..mobilenum..", " or ""
 					end
 					-- gather [email] from the result
 					for email in string.gfind(resultbody, "[%w%-]+[%p]at[%p][%w%-]+[%p]dot[%p][%w]+") do
 						local rawmail1 = string.gsub(email, "[%p]at[%p]", "@")
-						local mail = string.gsub(rawmail1, "[%p]dot[%p]", ".")
-						print("mail: "..mail)
+						mail = string.gsub(rawmail1, "[%p]dot[%p]", ".")
+					--	print("mail: "..mail)
+						tablestring = tablestring..mail..", " or ""
 					end
 					-- take care of e.G. example@given.co.at
 					for email in string.gfind(resultbody, "[%w%-]+[%p]at[%p][%w%-]+[%p]dot[%p][%w]+[%p]dot[%p][%w]+") do
-						local rawmail1 = string.gsub(email, "[%p]at[%p]", "@")
-						local mail = string.gsub(rawmail1, "[%p]dot[%p]", ".")
-						print("mail_two: "..mail)
+						local rawmail_two1 = string.gsub(email, "[%p]at[%p]", "@")
+						altmail = string.gsub(rawmail_two1, "[%p]dot[%p]", ".")
+					--	print("altmail: "..altmail)
+						tablestring = tablestring..altmail..", " or ""
 					end
 					-- get [url] from the result
 					for www in string.gfind(resultbody, "Fenster\">www[%w%p]+</a>") do
-						local url = string.gsub(www, "(Fenster\">)([%w%p]+)(</a>)", "%2")
-						print("url: "..url)
+						url = string.gsub(www, "(Fenster\">)([%w%p]+)(</a>)", "%2")
+					--	print("url: "..url)
+						tablestring = tablestring..url or ""
 					end
+					print(tablestring)
+					-- insert the constructed tablestring to db table
+					--table.instert(db, tablestring)
 				end
 			else
 				print(branchName.." NOT RELEVANT")
