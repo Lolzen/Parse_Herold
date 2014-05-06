@@ -2266,10 +2266,10 @@ if input == "fetch" then
 			print(branchplaceurl)
 			local branchplacebody = http.request(branchplaceurl)
 			local name, address, plz, region, phonenum, mobilenum, mail, altmail, url
-			local  tablestring
+			local  tablestring = ""
 			if string.find(branchplacebody, "prop13 = \""..placeName.."\"") then --check if branch got any hits in placeName or not
 				-- get result's names and urls
-				for result in string.gfind(branchplacebody, "<a href=\"[%w%p]+/\" class=\"bold\">[%w%s%p]+</a></h2><div") do
+				for result in string.gfind(branchplacebody, "<a href=\"[%w%p]+/\" class=\"bold\">[%w%s%p\"]+</a></h2><div") do
 					local formattedresulturl = string.gsub(result, "(<a href=\")([%w%s%p]+)(\")(%s.*)", "%2")
 					local resultbody = http.request(formattedresulturl)
 					-- gather fields [name], [address], [plz] and [region] from the result
@@ -2281,66 +2281,59 @@ if input == "fetch" then
 							if string.find(name, "&amp;") then
 								name = string.gsub(name, "&amp;", "&")
 							end
-						--	print("itemprop (name): "..name)
-							tablestring = name..", "
+							tablestring = name..", " or tablestring
 						end
 						-- streetAddress
 						if string.find(itemprop, "streetAddress") then
 							address = string.gsub(itemprop, "(itemprop=\"[%w]+\">)([%w%s%p%ö%ä%ü]+)(</span>)", "%2")
-						--	print("iemprop (adress): "..address)
-							tablestring = tablestring..address..", "
+							tablestring = tablestring..address..", " or tablestring
 						end
 						-- postalCode
 						if string.find(itemprop, "postalCode") then
 							plz = string.gsub(itemprop, "(itemprop=\"[%w]+\">)([%d]+)(</span>)", "%2")
-						--	print("iemprop (postalCode): "..plz)
-							tablestring = tablestring..plz..", "
+							tablestring = tablestring..plz..", " or tablestring
 						end
 						-- adressRegion
 						if string.find(itemprop, "addressRegion") then
 							region = string.gsub(itemprop, "(itemprop=\"[%w]+\">)([%w%s%p%ö%ä%ü]+)(</span>)", "%2")
-						--	print("iemprop (addressRegion): "..region)
-							tablestring = tablestring..region..", "
+							tablestring = tablestring..region..", " or tablestring
 						end
 					end
 					-- gather [phonenumber] from the result
 					for phonenumber in string.gfind(resultbody, "class=\"telefon\">Telefon</th><td class=\"lnumber\">[%+%d%s%-]+") do
 						phonenum = string.gsub(phonenumber, "(class=\"telefon\">Telefon</th><td class=\"lnumber\">)([%+%d%s%-]+)", "%2")
-					--	print("phone: "..phonenum)
-						tablestring = tablestring..phonenum..", " or ""
+						tablestring = tablestring..phonenum..", " or tablestring
 					end
 					-- gather [mobilenumber] from the result
 					for mobilenumber in string.gfind(resultbody, "class=\"mobil\">Mobil</th><td class=\"lnumber\">[%+%d%s%-]+") do
 						mobilenum = string.gsub(mobilenumber, "(class=\"mobil\">Mobil</th><td class=\"lnumber\">)([%+%d%s%-]+)", "%2")
-					--	print("mobile: "..mobilenum)
-						tablestring = tablestring..mobilenum..", " or ""
+						tablestring = tablestring..mobilenum..", " or tablestring
 					end
 					-- gather [email] from the result
-					for email in string.gfind(resultbody, "[%w%-]+[%p]at[%p][%w%-]+[%p]dot[%p][%w]+") do
+					for email in string.gfind(resultbody, "[%w%-%.]+[%p]at[%p][%w%-]+[%p]dot[%p][%w]+") do
 						local rawmail1 = string.gsub(email, "[%p]at[%p]", "@")
 						mail = string.gsub(rawmail1, "[%p]dot[%p]", ".")
-					--	print("mail: "..mail)
-						tablestring = tablestring..mail..", " or ""
+						tablestring = tablestring..mail..", " or tablestring
 					end
 					-- take care of e.G. example@given.co.at
 					for email in string.gfind(resultbody, "[%w%-]+[%p]at[%p][%w%-]+[%p]dot[%p][%w]+[%p]dot[%p][%w]+") do
 						local rawmail_two1 = string.gsub(email, "[%p]at[%p]", "@")
 						altmail = string.gsub(rawmail_two1, "[%p]dot[%p]", ".")
-					--	print("altmail: "..altmail)
-						tablestring = tablestring..altmail..", " or ""
+						tablestring = tablestring..altmail..", " or tablestring
 					end
 					-- get [url] from the result
 					for www in string.gfind(resultbody, "Fenster\">www[%w%p]+</a>") do
 						url = string.gsub(www, "(Fenster\">)([%w%p]+)(</a>)", "%2")
-					--	print("url: "..url)
-						tablestring = tablestring..url or ""
+						tablestring = tablestring..url or tablestring
 					end
-					print(tablestring)
-					-- insert the constructed tablestring to db table
-					--table.instert(db, tablestring)
+					local tstr = branchName..", "..tostring(tablestring)
+					print(tstr)
+					table.insert(db, tstr)
+					-- flush tablestring, so no doubles occour
+					tablestring = ""
 				end
 			else
-				print(branchName.." NOT RELEVANT")
+				print(">>>>"..branchName.." NOT RELEVANT")
 			end
 		end
 	end
